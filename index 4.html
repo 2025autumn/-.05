@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>웹소설 체크리스트</title>
+<style>
+  body {
+    background-color: white;
+    color: black;
+    font-family: 'Noto Sans KR', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+  }
+  h1 {
+    font-family: 'Gowun Dodum', sans-serif;
+    font-size: 2.3rem;
+    margin-bottom: 25px;
+    letter-spacing: 2px;
+  }
+  button {
+    background: none;
+    border: 1px solid black;
+    padding: 10px 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.3s;
+    font-style: italic;
+  }
+  button:hover {
+    background-color: black;
+    color: white;
+  }
+  input {
+    border: 1px solid #000;
+    padding: 8px;
+    width: 180px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  section {
+    display: none;
+    text-align: center;
+    width: 90%;
+    max-width: 500px;
+  }
+  .chapter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    padding: 8px 0;
+  }
+  input[type="text"] {
+    flex: 1;
+    margin-right: 10px;
+    padding: 6px;
+  }
+  .novelList button {
+    display: block;
+    margin: 10px auto;
+    width: 250px;
+  }
+  #backBtn {
+    display: block;
+    margin: 20px auto;
+  }
+</style>
+</head>
+<body>
+
+<h1>📚 웹소설 체크리스트</h1>
+
+<!-- 시작 화면 -->
+<section id="startSection" style="display:block;">
+  <button id="startBtn">시작하기</button>
+</section>
+
+<!-- 암호 입력 화면 -->
+<section id="passwordSection">
+  <p>암호를 입력하세요</p>
+  <input type="password" id="passwordInput" placeholder="암호 입력">
+  <br>
+  <button id="confirmBtn">확인</button>
+</section>
+
+<!-- 소설 목록 화면 -->
+<section id="listSection" class="novelList">
+  <h2>소설 선택</h2>
+  <button onclick="openNovel('전지적 독자 시점')">전지적 독자 시점</button>
+  <button onclick="openNovel('데뷔 못하면 죽는 병 걸림')">데뷔 못하면 죽는 병 걸림</button>
+  <button onclick="openNovel('괴담에 떨어져도 출근을 해야 하는구나')">괴담에 떨어져도 출근을 해야 하는구나</button>
+</section>
+
+<!-- 소설 회차 관리 화면 -->
+<section id="novelSection">
+  <h2 id="novelTitle">소설 제목</h2>
+  <div id="chapterList"></div>
+
+  <div style="text-align:center; margin-top:20px;">
+    <input type="text" id="newChapter" placeholder="회차 이름 입력">
+    <button onclick="addChapter()">추가</button>
+  </div>
+
+  <button id="backBtn" onclick="goBack()">← 돌아가기</button>
+</section>
+
+<script>
+const startSection = document.getElementById('startSection');
+const passwordSection = document.getElementById('passwordSection');
+const listSection = document.getElementById('listSection');
+const novelSection = document.getElementById('novelSection');
+const confirmBtn = document.getElementById('confirmBtn');
+const passwordInput = document.getElementById('passwordInput');
+const novelTitle = document.getElementById('novelTitle');
+const chapterList = document.getElementById('chapterList');
+const newChapterInput = document.getElementById('newChapter');
+
+let currentNovel = '';
+let chapters = [];
+
+document.getElementById('startBtn').onclick = () => {
+  startSection.style.display = 'none';
+  passwordSection.style.display = 'block';
+};
+
+confirmBtn.onclick = () => {
+  const password = passwordInput.value;
+  if (password === "1234") {
+    passwordSection.style.display = 'none';
+    listSection.style.display = 'block';
+  } else {
+    alert('암호가 틀렸습니다.');
+  }
+};
+
+function openNovel(name) {
+  currentNovel = name;
+  novelTitle.textContent = "📖 " + name;
+  listSection.style.display = 'none';
+  novelSection.style.display = 'block';
+  chapters = JSON.parse(localStorage.getItem(name + "_chapters")) || [];
+  renderChapters();
+}
+
+function goBack() {
+  localStorage.setItem(currentNovel + "_chapters", JSON.stringify(chapters));
+  novelSection.style.display = 'none';
+  listSection.style.display = 'block';
+}
+
+function renderChapters() {
+  chapterList.innerHTML = '';
+  chapters.forEach((ch, index) => {
+    const div = document.createElement('div');
+    div.className = 'chapter';
+    div.innerHTML = `
+      <input type="text" value="${ch}" onchange="editChapter(${index}, this.value)">
+      <button onclick="deleteChapter(${index})">삭제</button>
+    `;
+    chapterList.appendChild(div);
+  });
+}
+
+function addChapter() {
+  const name = newChapterInput.value.trim();
+  if (!name) return;
+  chapters.push(name);
+  localStorage.setItem(currentNovel + "_chapters", JSON.stringify(chapters));
+  newChapterInput.value = '';
+  renderChapters();
+}
+
+function editChapter(index, newName) {
+  chapters[index] = newName;
+  localStorage.setItem(currentNovel + "_chapters", JSON.stringify(chapters));
+}
+
+function deleteChapter(index) {
+  chapters.splice(index, 1);
+  localStorage.setItem(currentNovel + "_chapters", JSON.stringify(chapters));
+  renderChapters();
+}
+</script>
+
+</body>
+</html>
